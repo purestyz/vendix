@@ -8,27 +8,72 @@
 </head>
 <body>
 
+<div id="boot" class="boot">Carregando…</div>
+<script>
+  // Roda como script comum: avisa se os módulos não puderem carregar
+  (function () {
+    var boot = document.getElementById('boot');
+    if (location.protocol === 'file:') {
+      boot.innerHTML = '<h2>Abra por um servidor local</h2>' +
+        '<p>O navegador bloqueia módulos JS quando o arquivo é aberto com duplo clique (file://).</p>' +
+        '<p>Dentro da pasta do projeto rode:<br><code>python -m http.server 8080</code> (ou <code>npx serve</code>)<br>' +
+        'e abra <code>http://localhost:8080</code>.<br>No VS Code você também pode usar a extensão <b>Live Server</b>.</p>';
+      return;
+    }
+    setTimeout(function () {
+      if (!boot.hidden && !window.__vendixOk) {
+        boot.innerHTML = '<h2>Não foi possível carregar</h2>' +
+          '<p>Verifique sua conexão (a biblioteca do Supabase vem de um CDN) e se todos os arquivos estão na mesma pasta. ' +
+          'Abra o console do navegador (F12) para ver o erro.</p>';
+      }
+    }, 6000);
+  })();
+</script>
+
 <section id="auth" hidden>
-  <form id="login" class="card auth-card">
+  <div id="auth-card" class="card auth-card">
     <h1>Vendix</h1>
     <p class="muted">Pedidos, clientes e assinaturas num só lugar.</p>
     <p id="aviso" class="aviso" hidden>Configure <code>config.js</code> com a URL e a chave anon do seu projeto Supabase.</p>
-    <label>E-mail<input type="email" name="email" required autocomplete="email"></label>
-    <label>Senha<input type="password" name="senha" required minlength="6" autocomplete="current-password"></label>
-    <button class="btn primary" type="submit">Entrar</button>
-    <button class="btn" type="button" id="criar-conta">Criar conta</button>
-  </form>
+
+    <div id="auth-tabs" class="tabs">
+      <button type="button" data-t="entrar" class="on">Entrar</button>
+      <button type="button" data-t="criar">Criar conta</button>
+    </div>
+
+    <form id="form-entrar" class="stack">
+      <label>E-mail<input type="email" name="email" required autocomplete="email"></label>
+      <label>Senha<input type="password" name="senha" required autocomplete="current-password"></label>
+      <button class="btn primary" type="submit">Entrar</button>
+    </form>
+
+    <form id="form-criar" class="stack" hidden>
+      <label>Seu nome<input type="text" name="nome" required autocomplete="name"></label>
+      <label>E-mail<input type="email" name="email" required autocomplete="email"></label>
+      <div class="form">
+        <label>Senha<input type="password" name="senha" required minlength="6" autocomplete="new-password"></label>
+        <label>Confirmar senha<input type="password" name="confirma" required minlength="6" autocomplete="new-password"></label>
+      </div>
+      <fieldset>
+        <legend>Escolha seu plano</legend>
+        <div id="planos-cadastro" class="planos-grid"><div class="loading">Carregando planos…</div></div>
+      </fieldset>
+      <button class="btn primary" type="submit">Criar conta</button>
+    </form>
+  </div>
 </section>
 
 <div id="app" hidden>
   <aside class="sidebar">
     <div class="brand">Vendix</div>
+    <a id="plano-chip" class="chip" href="#/plano">Plano</a>
     <nav id="nav">
       <a href="#/dashboard">Painel</a>
       <a href="#/pedidos">Pedidos</a>
       <a href="#/clientes">Clientes</a>
       <a href="#/produtos">Produtos</a>
       <a href="#/assinaturas">Assinaturas</a>
+      <a href="#/plano">Meu plano</a>
     </nav>
     <button id="sair" class="btn ghost">Sair</button>
   </aside>
