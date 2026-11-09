@@ -120,7 +120,8 @@ async function iniciar() {
   window.addEventListener('hashchange', () => { if (!$('#app').hidden) rota(); });
 
   if (SUPABASE_URL.includes('SEU-PROJETO')) {
-    $('#auth').hidden = false; $('#aviso').hidden = false; return;
+    $('#auth').hidden = false; $('#aviso').hidden = false;
+    window.__vendixPronto = true; return;
   }
   const { data: { session } } = await sb.auth.getSession();
   if (session) await entrar(); else mostrar(false);
@@ -131,5 +132,6 @@ async function iniciar() {
     // evita chamar o supabase dentro do próprio callback (pode travar)
     if (!estava) setTimeout(entrar, 0);
   });
+  window.__vendixPronto = true;
 }
 iniciar();
