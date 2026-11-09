@@ -5,7 +5,7 @@ import { $, brl, dt, esc, badge, openModal, closeModal, toast, msgErro } from '.
 const KIND = { aberto: 'warn', faturado: 'info', entregue: 'ok', cancelado: 'err' };
 
 export const render = root => crudPage(root, {
-  table: 'pedidos', singular: 'pedido', select: '*, clientes(nome)',
+  table: 'pedidos', singular: 'pedido', select: '*, clientes(nome)', exportavel: true,
   noEdit: true, noDelete: true,
   columns: [
     { label: 'Nº', render: r => '#' + r.numero },
