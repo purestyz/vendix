@@ -2,7 +2,7 @@ import { crudPage } from './crud.js';
 import { badge } from './ui.js';
 
 export const render = root => crudPage(root, {
-  table: 'clientes', singular: 'cliente', order: 'nome', asc: true,
+  table: 'clientes', singular: 'cliente', exportavel: true, order: 'nome', asc: true,
   search: ['nome', 'email', 'documento', 'telefone'],
   columns: [
     { key: 'nome', label: 'Nome' },
