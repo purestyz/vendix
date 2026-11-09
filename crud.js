@@ -1,5 +1,6 @@
 import { sb } from './api.js';
 import { $, esc, toast, debounce, formModal, msgErro } from './ui.js';
+import { pode } from './plano.js';
 
 const SIZE = 15;
 
@@ -16,6 +17,7 @@ export async function crudPage(root, cfg) {
     <div class="toolbar">
       ${cfg.search ? '<input type="search" class="search" placeholder="Buscar…">' : ''}
       <div class="spacer"></div><span class="extra"></span>
+      ${cfg.exportavel ? '<button class="btn" data-csv>Exportar CSV</button>' : ''}
       ${cfg.noCreate ? '' : `<button class="btn primary" data-new>+ Novo ${esc(cfg.singular)}</button>`}
     </div>
     <div class="card table-wrap"></div><div class="pager"></div>`;
@@ -100,6 +102,27 @@ export async function crudPage(root, cfg) {
   if (s) s.oninput = debounce(() => {
     term = s.value.replace(/[,()%*]/g, ' ').trim(); page = 0; load();
   });
+
+  const csv = $('[data-csv]', root);
+  if (csv) csv.onclick = async () => {
+    if (!pode('exportar_csv')) return toast('Exportar CSV está disponível nos planos Chama e Vulcão.', 'erro');
+    csv.disabled = true;
+    let q = sb.from(cfg.table).select('*');
+    if (cfg.filter) q = cfg.filter(q);
+    const { data, error } = await q.order(cfg.order || 'criado_em', { ascending: !!cfg.asc }).limit(5000);
+    csv.disabled = false;
+    if (error) return toast(msgErro(error), 'erro');
+    if (!data.length) return toast('Nada para exportar');
+    const cols = Object.keys(data[0]).filter(k => k !== 'user_id');
+    const cel = v => {
+      const s = v == null ? '' : String(v);
+      return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const linhas = [cols.join(';'), ...data.map(r => cols.map(c => cel(r[c])).join(';'))];
+    const url = URL.createObjectURL(new Blob(['﻿' + linhas.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: cfg.table + '.csv' });
+    a.click(); URL.revokeObjectURL(url);
+  };
 
   const novo = $('[data-new]', root);
   if (novo) novo.onclick = () => cfg.onNew ? cfg.onNew(load) : edit();
